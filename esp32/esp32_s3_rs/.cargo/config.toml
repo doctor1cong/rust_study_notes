@@ -11,10 +11,8 @@ build-std = ["std", "panic_abort"]
 
 [env]
 MCU="esp32s3"
-# Note: this variable is not used by the pio builder (`cargo build --features pio`)
 ESP_IDF_VERSION = "v5.2.1"
-ESP_IDF_PATH_ISSUES="warn"
-#添加这一行,为了节省硬盘空间和下载时间，把工具链路径设置为全局（global）。否则每一个新项目/工作空间都会安装一个自己的工具链实例：
+ESP_IDF_PATH_ISSUES = "warn"
 #ESP_IDF_TOOLS_INSTALL_DIR = { value = "global" } 
 
 # Workaround for https://github.com/esp-rs/esp-idf-template/issues/174 

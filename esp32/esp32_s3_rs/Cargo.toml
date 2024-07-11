@@ -35,3 +35,4 @@ anyhow = "1.0.75"
 
 [build-dependencies]
 embuild = "0.32.0"
+cc = "1.0"
