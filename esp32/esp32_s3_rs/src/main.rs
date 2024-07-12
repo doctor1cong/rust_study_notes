@@ -1,4 +1,5 @@
-
+#![allow(unused)]
+ 
 use esp_idf_hal::delay::FreeRtos;
 use esp_idf_hal::gpio::*;
 use esp_idf_hal::peripherals::Peripherals;
@@ -11,6 +12,7 @@ use esp_idf_hal::prelude::*;
 use esp_idf_hal::uart;
 use esp_idf_hal::delay::BLOCK;
 
+pub mod module;
 
 fn main()->anyhow::Result<()> {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -22,35 +24,33 @@ fn main()->anyhow::Result<()> {
 
     log::info!("Hello, world!");
 
-    // let peripherals = Peripherals::take().unwrap();
-    // let mut led_r= PinDriver::output(peripherals.pins.gpio9)?;
-    // let mut led_g= PinDriver::output(peripherals.pins.gpio10)?;
-
-    // loop{
-    //     led_r.set_high()?;
-    //     led_g.set_high()?;
-    //     info!("led rg high");
-    //     FreeRtos::delay_ms(600);
-    //     led_r.set_low()?;
-    //     led_g.set_low()?;
-    //     info!("led rg low");
-    //     FreeRtos::delay_ms(600);
-    // }
-
     let peripherals = Peripherals::take().unwrap();
-    let pins = peripherals.pins;
+    let mut led_r= PinDriver::output(peripherals.pins.gpio9)?;
+    let mut led_g= PinDriver::output(peripherals.pins.gpio10)?;
+    loop{
+        led_r.set_high()?;
+        led_g.set_high()?;
+        info!("led rg high");
+        FreeRtos::delay_ms(600);
+        led_r.set_low()?;
+        led_g.set_low()?;
+        info!("led rg low");
+        FreeRtos::delay_ms(600);
+        break;
+    }
     
     let config = uart::config::Config::default().baudrate(Hertz(115_200));
     
     let mut uart1: uart::UartDriver = uart::UartDriver::new(
         peripherals.uart1,
-        pins.gpio1,
-        pins.gpio2,
+        peripherals.pins.gpio1,
+        peripherals.pins.gpio2,
         Option::<AnyIOPin>::None,
         Option::<AnyIOPin>::None,
         &config
     ).unwrap();
 
+    module::app_thread::app_thread_start();
 
     let mut i:u32 = 0;
     let mut data_arr:u8 =  {5;20};
@@ -61,12 +61,15 @@ fn main()->anyhow::Result<()> {
         //writeln!(uart, "{:}", format!("count {:}", i)).unwrap();
         // format(args);
         
-        
         let mut buf = [0_u8; 1];
         let mut buf_len = buf.len();
         let mut index = 0;
         uart1.read(&mut buf,BLOCK)?;
         uart1.write_char(buf[0] as char);
+        if buf [0] == '\r' as u8{
+            uart1.write_char('\n');
+            uart1.write_str("Fuck you!\r\n");
+        }
         // while buf_len > 0 {
         //     let mut r_data: u8 = 0;
         //     info!("uart1 read  {}",buf[index] as char);
